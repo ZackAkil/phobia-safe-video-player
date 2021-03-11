@@ -1,0 +1,131 @@
+<head>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+    <title>🙈 Phobia Safe Video Player</title>
+
+
+    <style>
+        video {
+            height: 400px;
+        }
+
+        #video-container {
+            position: relative;
+            width: fit-content;
+        }
+
+        #pobia-shield {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background-color: gray;
+            pointer-events:none;
+        }
+
+
+        #pobia-shield.show {
+            opacity: 1;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h1>🙈 Phobia Safe Video Player</h1>
+
+    <div id="video-container">
+
+        <video controls src="5-generation-bakers.mp4"></video>
+
+        <div id="pobia-shield"></div>
+
+    </div>
+
+
+    <h5>What is your deepest fear?... <input /></h5>
+
+    <script>
+
+        const SCARY_PADDING_SECONDS = 1
+
+        const video = document.getElementsByTagName('video')[0]
+        const phobia_shield = document.getElementById('pobia-shield')
+
+        const enitity_frames = {}
+
+        var scary_parts = []
+
+
+        function process_labels(json) {
+
+            const annotations = json.annotation_results[0].frame_label_annotations
+
+            annotations.forEach(annotation => {
+
+                if (!(annotation.entity.description in enitity_frames)) {
+                    enitity_frames[annotation.entity.description] = []
+                }
+
+                annotation.frames.forEach(frame => {
+                    enitity_frames[annotation.entity.description].push(frame.time_offset.seconds || 0)
+                });
+
+            });
+
+            console.log(annotations)
+        }
+
+        // load video annotation fril from Google Cloud Video Intelligence API
+        $.getJSON("output.json", (json) => {
+            process_labels(json)
+            scary_parts = enitity_frames['baker']
+        })
+
+        // watch for video time changes
+        video.addEventListener('timeupdate', () => {
+
+            const time_to_check = video.currentTime
+
+            var found_scary_part = false
+
+            for (let index = 0; index < scary_parts.length; index++) {
+
+                const scary_time = scary_parts[index];
+
+                if (Math.abs(scary_time - time_to_check) <= SCARY_PADDING_SECONDS) {
+                    found_scary_part = true
+                    break
+                }
+            }
+
+            if (found_scary_part) {
+                // hid video playing
+                console.log("🙈")
+                phobia_shield.classList.add("show")
+            } else {
+                console.log('removing cloass')
+                phobia_shield.classList.remove("show")
+            }
+
+
+
+            console.log(video.currentTime)
+
+        })
+
+
+    </script>
+</body>
