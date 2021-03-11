@@ -1,4 +1,4 @@
-# phobia-safe-video-player
+# [phobia-safe-video-player](https://zackakil.github.io/phobia-safe-video-player/)
 A video player that will not show things that could trigger a phobia. Using Google Cloud Video Intelligence API 
 
 ``` bash
